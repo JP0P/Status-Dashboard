@@ -253,6 +253,7 @@ header h1 {
     gap: 4px;
 }
 
+
 .server-name {
     font-size: 1.25rem;
     font-weight: 600;
@@ -532,24 +533,111 @@ header h1 {
 
 @media (max-width: 768px) {
     .container {
-        padding: 24px 16px;
+        padding: 16px 12px;
     }
 
     header {
-        margin-bottom: 32px;
+        margin-bottom: 20px;
     }
 
     header h1 {
         font-size: 2rem;
+        margin-bottom: 8px;
+    }
+
+    .last-updated {
+        margin-bottom: 16px;
     }
 
     .servers-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 12px;
     }
 
     .server-card {
-        padding: 20px;
+        padding: 14px 16px 18px 16px;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+
+    .server-card:active {
+        transform: scale(0.99);
+    }
+
+    .server-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+
+    /* Put server name and region on same line for mobile */
+    .server-title {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .server-name {
+        font-size: 1.125rem;
+    }
+
+    .server-region {
+        font-size: 0.75rem;
+    }
+
+    .server-info {
+        margin-bottom: 12px;
+    }
+
+    /* Hide all info rows except status by default on mobile */
+    .server-card .info-row:not([data-field="status"]) {
+        display: none;
+    }
+
+    /* Tighter spacing for collapsed cards */
+    .server-card:not(.expanded) .info-row {
+        padding: 6px 0;
+    }
+
+    /* Show all info rows when card is expanded */
+    .server-card.expanded .info-row {
+        display: flex;
+    }
+
+    /* Override desktop ::after and use for expand/collapse indicator - bottom center */
+    .server-card::after {
+        content: '▼' !important;
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%) scaleX(1.3);
+        top: auto;
+        right: auto;
+        width: auto;
+        height: auto;
+        font-size: 0.6875rem;
+        color: #c5d1e0 !important;
+        opacity: 0.85 !important;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 10;
+        background: none !important;
+        border-radius: 0;
+        mix-blend-mode: normal !important;
+    }
+
+    .server-card.expanded::after {
+        transform: translateX(-50%) scaleX(1.3) rotate(180deg);
+    }
+
+    .server-link {
+        margin-bottom: 8px;
+    }
+
+    .server-link {
+        margin-top: 12px;
+        padding: 10px 14px;
+        font-size: 0.875rem;
     }
 
     .info-row:hover {

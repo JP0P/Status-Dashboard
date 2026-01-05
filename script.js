@@ -144,6 +144,18 @@ function createServerCard(server, statusData) {
     const card = document.createElement('div');
     card.className = 'server-card';
 
+    // Add click handler for mobile expand/collapse
+    card.addEventListener('click', function(e) {
+        // Only on mobile screens (768px or less)
+        if (window.innerWidth <= 768) {
+            // Don't toggle if clicking on the link
+            if (e.target.closest('.server-link')) {
+                return;
+            }
+            card.classList.toggle('expanded');
+        }
+    });
+
     // Determine status indicator class
     let statusClass = 'offline';
     let statusText = 'OFFLINE';
