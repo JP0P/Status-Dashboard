@@ -206,36 +206,36 @@ function createServerCard(server, statusData) {
             <div class="status-indicator ${statusClass}"></div>
         </div>
         <div class="server-info">
-            <div class="info-row">
+            <div class="info-row" data-field="status">
                 <span class="info-label">Status</span>
                 <span class="info-value status-${statusClass}">${statusText}</span>
             </div>
             ${statusData.status !== 'offline' && statusData.status !== 'checking' ? `
-                <div class="info-row">
+                <div class="info-row" data-field="coin">
                     <span class="info-label">Coin</span>
                     <span class="info-value">${coin}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="block-height">
                     <span class="info-label">Block Height</span>
                     <span class="info-value">${typeof blockHeight === 'number' ? blockHeight.toLocaleString() : blockHeight}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="synchronized">
                     <span class="info-label">Synchronized</span>
                     <span class="info-value ${inSync === true ? 'status-good' : 'status-bad'}">${inSync === true ? '✓ Yes' : '✗ No'}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="last-block">
                     <span class="info-label">Last Block</span>
                     <span class="info-value">${lastBlockTime}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="mempool-sync">
                     <span class="info-label">Mempool Sync</span>
                     <span class="info-value ${inSyncMempool === true ? 'status-good' : 'status-bad'}">${inSyncMempool === true ? '✓ Yes' : '✗ No'}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="last-mempool">
                     <span class="info-label">Last Mempool Update</span>
                     <span class="info-value">${lastMempoolTime}</span>
                 </div>
-                <div class="info-row">
+                <div class="info-row" data-field="version">
                     <span class="info-label">Version</span>
                     <span class="info-value">${version}</span>
                 </div>
@@ -252,17 +252,25 @@ function createServerCard(server, statusData) {
 let isFirstLoad = true;
 let currentStatuses = [];
 
-function hasDataChanged(oldStatus, newStatus) {
-    if (!oldStatus || !newStatus) return true;
+function getChangedFields(oldStatus, newStatus) {
+    if (!oldStatus || !newStatus) return null; // null means "all fields" (first load)
+
+    const changes = [];
 
     // Compare key fields to detect changes
     const oldBlock = oldStatus.backend?.blocks || oldStatus.blockbook?.bestHeight;
     const newBlock = newStatus.backend?.blocks || newStatus.blockbook?.bestHeight;
 
-    return oldStatus.status !== newStatus.status ||
-           oldBlock !== newBlock ||
-           oldStatus.blockbook?.inSync !== newStatus.blockbook?.inSync ||
-           oldStatus.blockbook?.inSyncMempool !== newStatus.blockbook?.inSyncMempool;
+    if (oldStatus.status !== newStatus.status) changes.push('status');
+    if (oldBlock !== newBlock) changes.push('block-height');
+    if (oldStatus.blockbook?.inSync !== newStatus.blockbook?.inSync) changes.push('synchronized');
+    if (oldStatus.blockbook?.inSyncMempool !== newStatus.blockbook?.inSyncMempool) changes.push('mempool-sync');
+    if (oldStatus.blockbook?.lastBlockTime !== newStatus.blockbook?.lastBlockTime) changes.push('last-block');
+    if (oldStatus.blockbook?.lastMempoolTime !== newStatus.blockbook?.lastMempoolTime) changes.push('last-mempool');
+    if (oldStatus.blockbook?.version !== newStatus.blockbook?.version) changes.push('version');
+    if (oldStatus.blockbook?.coin !== newStatus.blockbook?.coin) changes.push('coin');
+
+    return changes;
 }
 
 async function updateDashboard() {
@@ -287,23 +295,39 @@ async function updateDashboard() {
             const card = cards[index];
             const oldStatus = currentStatuses[index];
 
-            // On first load or when data changed
-            if (hasDataChanged(oldStatus, newStatus)) {
+            // Get which fields changed
+            const changedFields = getChangedFields(oldStatus, newStatus);
+
+            // On first load (changedFields is null) or when data changed (changedFields has items)
+            if (changedFields === null || changedFields.length > 0) {
                 const newCard = createServerCard(server, newStatus);
                 card.innerHTML = newCard.innerHTML;
 
                 // Remove initial-load class immediately on first update
                 card.classList.remove('initial-load');
 
-                // Add pulse animation whenever data updates
-                card.classList.remove('data-updated');
-                void card.offsetWidth; // Trigger reflow
-                card.classList.add('data-updated');
-
-                // Remove animation class after it completes
-                setTimeout(() => {
+                // Add pulse animation whenever data updates (not on first load)
+                if (changedFields !== null) {
                     card.classList.remove('data-updated');
-                }, 600);
+                    void card.offsetWidth; // Trigger reflow
+                    card.classList.add('data-updated');
+
+                    // Highlight specific changed fields
+                    changedFields.forEach(field => {
+                        const row = card.querySelector(`[data-field="${field}"]`);
+                        if (row) {
+                            row.classList.add('field-updated');
+                        }
+                    });
+
+                    // Remove animation classes after they complete
+                    setTimeout(() => {
+                        card.classList.remove('data-updated');
+                        card.querySelectorAll('.field-updated').forEach(row => {
+                            row.classList.remove('field-updated');
+                        });
+                    }, 1500);
+                }
             }
 
             // Store current status for next comparison
