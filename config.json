@@ -1,0 +1,5 @@
+{
+  "port": 8008,
+  "allowedDomain": "edge.app/api/v2",
+  "fetchTimeout": 10000
+}

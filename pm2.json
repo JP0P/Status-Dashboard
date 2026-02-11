@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "name": "blockbookStatus",
+      "script": "lib/server/index.js",
+      "error_file": "/var/log/pm2/blockbookStatus.error.log",
+      "out_file": "/var/log/pm2/blockbookStatus.out.log"
+    }
+  ]
+}

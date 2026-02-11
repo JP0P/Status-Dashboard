@@ -27,6 +27,10 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+lib/
+
+# Package managers
+package-lock.json
 
 # Claude Code local settings
 .claude/settings.local.json
